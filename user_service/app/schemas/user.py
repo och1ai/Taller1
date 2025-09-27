@@ -48,6 +48,9 @@ class UserCreate(UserBase):
         Raises:
             ValueError: Si el correo no es institucional
         """
+        # Permitir el correo admin@example.com
+        if v == "admin@example.com":
+            return v
         if not v.endswith('@perlametro.cl'):
             raise ValueError('El correo electrónico debe ser institucional (@perlametro.cl)')
         return v
@@ -141,7 +144,7 @@ class User(UserInDBBase):
     Este schema hereda de UserInDBBase pero no incluye
     información sensible como la contraseña hasheada.
     """
-    pass
+    is_admin: bool  # Solo se incluye en la respuesta, no en la creación
 
 class UserInDB(UserInDBBase):
     """

@@ -41,24 +41,27 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             User.deleted_at.is_(None)
         ).first()
 
-    def create(self, db: Session, *, obj_in: UserCreate) -> User:
+    def create(self, db: Session, *, obj_in: UserCreate, is_admin: bool = False) -> User:
         """
         Crea un nuevo usuario.
 
         Args:
             db: Sesión de la base de datos
             obj_in: Datos del nuevo usuario
+            is_admin: Flag para crear usuario administrador (solo usado por el seeder)
 
         Returns:
             Usuario creado
 
         Note:
             La contraseña se hashea automáticamente antes de guardarla
+            El parámetro is_admin solo debe usarse desde el seeder
         """
         db_obj = User(
             email=obj_in.email,
             hashed_password=get_password_hash(obj_in.password),
             full_name=obj_in.full_name,
+            is_admin=is_admin
         )
         db.add(db_obj)
         db.commit()

@@ -1,6 +1,13 @@
 import requests
 import json
 import sys
+import random
+import string
+
+def generate_unique_email():
+    """Generate a unique email with perlametro.cl domain"""
+    random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    return f"test.{random_string}@perlametro.cl"
 
 BASE_URL = "http://localhost:8000/api/v1/users"
 HEADERS = {"Content-Type": "application/json"}
@@ -33,7 +40,7 @@ def test_api():
         # Test invalid email
         invalid_email_payload = {
             "full_name": "Test User Python",
-            "email": "test.python@gmail.com",
+            "email": "test.user@gmail.com",  # Non-institutional email
             "password": "Password123!"
         }
         print_request("POST", BASE_URL + "/", invalid_email_payload)
@@ -45,7 +52,7 @@ def test_api():
         # Test invalid password
         invalid_password_payload = {
             "full_name": "Test User Python",
-            "email": "test.python@perlametro.cl",
+            "email": generate_unique_email(),
             "password": "weak"
         }
         print_request("POST", BASE_URL + "/", invalid_password_payload)
@@ -58,15 +65,19 @@ def test_api():
         print("STEP 1: Creating a new user...")
         create_payload = {
             "full_name": "Test User Python",
-            "email": "test.python@perlametro.cl",
-            "password": "Password123!"
+            "email": generate_unique_email(),
+            "password": "Password123!",
+            "is_admin": True  # Attempt to create an admin user through API
         }
         print_request("POST", BASE_URL + "/", create_payload)
         response = requests.post(BASE_URL + "/", headers=HEADERS, data=json.dumps(create_payload))
         print_response(response)
         assert response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
-        user_id = response.json().get("id")
-        print(f"--- User created successfully with ID: {user_id} ---\n")
+        user_response = response.json()
+        user_id = user_response.get("id")
+        assert "is_admin" in user_response, "Response should include is_admin field"
+        assert user_response["is_admin"] is False, "API should ignore is_admin flag in request"
+        print(f"--- User created successfully with ID: {user_id} (verified non-admin) ---\n")
 
         # 2. Get All Users
         print("STEP 2: Retrieving all users...")
@@ -76,14 +87,23 @@ def test_api():
         assert response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
         print("--- Retrieved all users successfully ---\n")
 
+        # 2.1 Verify user list contains the is_admin field and that we can't create admin users via API
+        users = response.json()
+        assert all("is_admin" in user for user in users), "All users should have the is_admin field"
+        assert all(not user["is_admin"] for user in users if user["email"] != "admin@perlametro.cl"), "Regular users should not be admins"
+        print("--- Admin flag presence and restriction verification passed ---\n")
+
         # 3. Get User by ID
         print(f"STEP 3: Retrieving user by ID ({user_id})...")
         print_request("GET", f"{BASE_URL}/{user_id}")
         response = requests.get(f"{BASE_URL}/{user_id}", headers=HEADERS)
         print_response(response)
         assert response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
-        assert response.json().get("id") == user_id
-        print("--- Retrieved user by ID successfully ---\n")
+        user_response = response.json()
+        assert user_response.get("id") == user_id
+        assert "is_admin" in user_response, "Response should include is_admin field"
+        assert user_response["is_admin"] is False, "New users should not be admins"
+        print("--- Retrieved user by ID successfully (with admin flag) ---\n")
 
         # 4. Update User
         print(f"STEP 4: Updating user ({user_id})...")

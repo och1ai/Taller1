@@ -15,5 +15,9 @@ if [ -f /app/migrations.sh ]; then
     /app/migrations.sh
 fi
 
+# Run seeder
+echo "Running database seeder..."
+python -m app.seeders.seed
+
 # Run the application
 exec "$@"

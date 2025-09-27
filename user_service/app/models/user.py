@@ -38,6 +38,9 @@ class User(Base):
     # Estado del usuario (activo/inactivo)
     is_active = Column(Boolean(), default=True)
     
+    # Flag para usuarios administradores
+    is_admin = Column(Boolean(), default=False, nullable=False)
+    
     # Timestamps para auditoría
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     deleted_at = Column(DateTime(timezone=True), nullable=True)  # Para soft delete
