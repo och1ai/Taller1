@@ -393,19 +393,71 @@ API_V1_STR=/api/v1
 
 El proyecto incluye una suite completa de pruebas que valida todos los endpoints y funcionalidades.
 
-### Ejecución de Pruebas
+### 🧪 Ejecución de Pruebas
 
-#### Con Docker Compose (Servicios en ejecución)
+#### 🏠 Pruebas Locales (Docker)
+
+Ejecuta las pruebas contra tu entorno local de desarrollo:
+
+##### Opción 1: Scripts Automatizados Nuevos 🆕
 
 ```bash
 # Linux/macOS
-./test.sh
+./test_local.sh
 
 # Windows
-test.bat
+test_local.bat
+
+# Python directo
+python test_local.py
+# o
+python3 test_local.py
 ```
 
-#### Con Python Virtual Environment
+##### Opción 2: Scripts de Servicio + Pruebas (Método Anterior)
+
+```bash
+# 1. Iniciar los servicios
+# Linux/macOS
+./start_service.sh
+
+# Windows
+start_service.bat
+
+# 2. Ejecutar pruebas (en otra terminal)
+./run_tests.sh  # Linux/macOS
+run_tests.bat   # Windows
+```
+
+#### ☁️ Pruebas de Producción
+
+##### Configuración Inicial
+
+1. Crea el archivo `.env.test` con la URL de tu servicio desplegado:
+
+```bash
+# .env.test
+PRODUCTION_API_URL=https://tu-servicio.onrender.com
+REQUEST_TIMEOUT=30
+LOG_LEVEL=INFO
+```
+
+2. Ejecuta las pruebas:
+
+```bash
+# Linux/macOS
+./test_production.sh
+
+# Windows
+test_production.bat
+
+# Python directo
+python test_production.py
+# o
+python3 test_production.py
+```
+
+#### 🐍 Con Python Virtual Environment (Método Manual)
 
 ```bash
 # Crear y activar entorno virtual
@@ -415,33 +467,33 @@ source venv/bin/activate  # Linux/macOS
 venv\Scripts\activate  # Windows
 
 # Instalar dependencias de testing
-pip install -r requirements-test.txt
+pip install requests
 
-# Ejecutar pruebas
+# Ejecutar pruebas locales
+export API_BASE_URL="http://localhost:8000"  # Linux/macOS
+set API_BASE_URL=http://localhost:8000       # Windows
 python test_api.py
-```
 
-#### Para Servicios en la Nube
-
-Para probar servicios desplegados en la nube, modifica la URL base en `test_api.py`:
-
-```python
-# Cambiar la URL base por la de tu servicio desplegado
-BASE_URL = "https://your-service.cloud-provider.com"  # Ejemplo
-# BASE_URL = "http://localhost:8000"  # Local
+# Ejecutar pruebas de producción
+export API_BASE_URL="https://tu-servicio.onrender.com"  # Linux/macOS
+set API_BASE_URL=https://tu-servicio.onrender.com       # Windows
+python test_api.py
 ```
 
 ### 📊 Cobertura de Pruebas
 
-Las pruebas cubren:
+Los scripts de prueba verifican:
 
-- ✅ **Validaciones de entrada** (email institucional, contraseñas fuertes)
-- ✅ **Autenticación JWT** (login, validación de tokens)
-- ✅ **Autorización** (permisos por rol)
-- ✅ **CRUD de usuarios** (crear, leer, actualizar, eliminar)
-- ✅ **Auditoría** (registro y consulta de logs)
-- ✅ **Soft delete** (eliminación suave)
+- ✅ **Validaciones de entrada** (email institucional, contraseña fuerte)
+- ✅ **Autenticación JWT** (login exitoso/fallido)
+- ✅ **Autorización granular** (permisos por rol)
+- ✅ **CRUD completo** (crear, leer, actualizar, eliminar)
+- ✅ **Soft deletes** (eliminación lógica)
+- ✅ **Logs de auditoría** (trazabilidad completa)
+- ✅ **Restricciones de negocio** (solo admin puede eliminar)
+- ✅ **Información de sesión** (datos del token)
 - ✅ **Casos de error** (401, 403, 404, 422)
+- ✅ **Conectividad** (verificación de servicios activos)
 
 ### Flujo de Autenticación
 
@@ -606,13 +658,13 @@ curl -X GET "http://localhost:8000/api/v1/audit-logs/" \
 Una vez desplegado, el servicio estará disponible en:
 
 ```
-https://user-service.your-cloud-provider.com:8443
+https://taller1-g43w.onrender.com
 ```
 
 ### 📊 Documentación en la Nube
 
-- **Swagger UI**: https://user-service.your-cloud-provider.com:8443/docs
-- **ReDoc**: https://user-service.your-cloud-provider.com:8443/redoc
+- **Swagger UI**: https://taller1-g43w.onrender.com/docs
+- **ReDoc**: https://taller1-g43w.onrender.com/redoc
 
 ### 🧪 Pruebas contra Servicio Desplegado
 
@@ -620,7 +672,7 @@ Para ejecutar las pruebas contra el servicio en la nube:
 
 1. **Modificar la URL base** en `test_api.py`:
    ```python
-   BASE_URL = "https://user-service.your-cloud-provider.com:8443"
+   BASE_URL = "https://taller1-g43w.onrender.com"
    ```
 
 2. **Ejecutar pruebas**:

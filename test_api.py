@@ -9,7 +9,11 @@ def generate_unique_email():
     random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     return f"test.{random_string}@perlametro.cl"
 
+# Para pruebas locales:
 API_BASE = "http://localhost:8000/api/v1"
+
+# Para pruebas en producción:
+# API_BASE = "https://taller1-g43w.onrender.com/api/v1"
 BASE_URL = f"{API_BASE}/users"
 AUTH_URL = f"{API_BASE}/auth"
 HEADERS = {"Content-Type": "application/json"}
