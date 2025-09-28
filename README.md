@@ -433,7 +433,17 @@ run_tests.bat   # Windows
 
 ##### Configuración Inicial
 
-1. Crea el archivo `.env.test` con la URL de tu servicio desplegado:
+1. **Copia el archivo de configuración**:
+
+```bash
+# Copia el archivo de ejemplo
+cp .env.test.example .env.test
+
+# Edita el archivo con tu URL de producción
+nano .env.test  # o tu editor preferido
+```
+
+2. **Configura tu servicio desplegado** en `.env.test`:
 
 ```bash
 # .env.test
@@ -442,7 +452,9 @@ REQUEST_TIMEOUT=30
 LOG_LEVEL=INFO
 ```
 
-2. Ejecuta las pruebas:
+> 📝 **Nota**: El archivo `.env.test` está en `.gitignore` para proteger tus URLs de producción.
+
+3. **Ejecuta las pruebas**:
 
 ```bash
 # Linux/macOS
@@ -715,7 +727,118 @@ ENVIRONMENT=production
 
 ---
 
-## 📄 Licencia
+## 🏧 Justificación de la Arquitectura
+
+### 📋 Contexto del Problema
+
+El proyecto inicialmente se solicitaba como un **CRUD simple de usuarios**, pero durante el análisis de requerimientos se identificaron necesidades críticas de seguridad y trazabilidad:
+
+- **Eliminación de usuarios** requiere **autorización administrativa**
+- **Soft delete** necesario para preservar integridad referencial
+- **Logs de auditoría** obligatorios para trazabilidad de operaciones críticas
+
+### 🛡️ Decisiones Arquitecturales
+
+#### 1. **Sistema de Autenticación JWT** 🔐
+
+**¿Por qué se añadió login y autenticación?**
+
+- **Requisito implícito**: "Solo administradores pueden eliminar usuarios"
+- **Solución**: Sistema JWT con roles diferenciados (admin/usuario)
+- **Beneficio**: Autorización granular y escalable
+
+```python
+# Sin autenticación: CUALQUIERA puede eliminar usuarios 😱
+DELETE /api/v1/users/123  # ¡PELIGROSO!
+
+# Con autenticación: Solo admins autorizados 🔒
+DELETE /api/v1/users/123
+Authorization: Bearer <admin_jwt_token>
+```
+
+#### 2. **Soft Delete** 🗑️
+
+**¿Por qué eliminación lógica en lugar de física?**
+
+- **Integridad referencial**: Preservar relaciones con otras entidades
+- **Recuperación**: Posibilidad de restaurar usuarios eliminados accidentalmente
+- **Cumplimiento**: Conservar datos para auditorías regulatorias
+
+```sql
+-- Eliminación física: ¡DATOS PERDIDOS PARA SIEMPRE!
+DELETE FROM users WHERE id = '123';
+
+-- Soft delete: Datos preservados, solo marcados como inactivos
+UPDATE users SET deleted_at = NOW() WHERE id = '123';
+```
+
+#### 3. **Sistema de Auditoría** 📈
+
+**¿Por qué logs de auditoría detallados?**
+
+- **Trazabilidad**: ¿Quién eliminó qué usuario y cuándo?
+- **Responsabilidad**: Registro de acciones administrativas críticas
+- **Compliance**: Cumplimiento con estándares de seguridad empresarial
+
+```json
+// Cada acción crítica queda registrada
+{
+  "action": "delete_user",
+  "performed_by": "admin_user_id",
+  "entity_id": "deleted_user_id",
+  "details": {
+    "deleted_user_email": "usuario@perlametro.cl",
+    "soft_delete": true
+  },
+  "performed_at": "2025-09-28T20:30:00Z"
+}
+```
+
+### 🎯 Beneficios de la Arquitectura Implementada
+
+#### 🔒 **Seguridad Multicapa**
+- **Autenticación**: JWT con expiración configurable
+- **Autorización**: Roles granulares (admin/usuario)
+- **Validación**: Email institucional obligatorio
+- **Encriptación**: Contraseñas hasheadas con bcrypt
+
+#### 📈 **Escalabilidad y Mantenibilidad**
+- **Arquitectura en capas**: Separación clara de responsabilidades
+- **Patrones de diseño**: Repository, Factory, Strategy, Dependency Injection
+- **APIs RESTful**: Estándar de la industria con documentación OpenAPI
+- **Docker**: Despliegue consistente en cualquier entorno
+
+#### 📊 **Observabilidad y Monitoreo**
+- **Logs estructurados**: Auditoría completa de operaciones críticas
+- **Métricas de negocio**: Seguimiento de acciones administrativas
+- **Trazabilidad**: Registro detallado de quién hizo qué y cuándo
+
+### 🚀 **Comparación: CRUD Básico vs Solución Implementada**
+
+| Aspecto | CRUD Básico | Solución Implementada |
+|---------|---------------|-------------------------|
+| **Eliminación** | Cualquiera puede eliminar | Solo administradores autorizados |
+| **Datos** | Pérdida permanente | Soft delete con posible recuperación |
+| **Seguridad** | Sin autenticación | JWT + roles + validaciones |
+| **Auditoría** | Sin rastro de cambios | Logs detallados de todas las operaciones |
+| **Escalabilidad** | Limitada | Arquitectura empresarial preparada para crecer |
+| **Compliance** | No apto para producción | Cumple estándares de seguridad |
+
+### 🏆 **Resultado Final**
+
+Lo que comenzó como un **CRUD simple** evolucionó hacia un **sistema de gestión de usuarios empresarial** que:
+
+- ✅ **Protege datos críticos** con autenticación robusta
+- ✅ **Garantiza trazabilidad** con auditoría completa
+- ✅ **Preserva integridad** con soft deletes
+- ✅ **Facilita mantenimiento** con arquitectura limpia
+- ✅ **Permite escalabilidad** con patrones probados
+
+> 💡 **Conclusión**: Las decisiones arquitecturales fueron impulsadas por **requisitos de negocio reales** y **mejores prácticas de la industria**, resultando en una solución robusta y lista para producción.
+
+---
+
+## 📝 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 

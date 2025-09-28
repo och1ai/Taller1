@@ -3,20 +3,27 @@ import json
 import sys
 import random
 import string
+import os
 
 def generate_unique_email():
     """Generate a unique email with perlametro.cl domain"""
     random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     return f"test.{random_string}@perlametro.cl"
 
-# Para pruebas locales:
-API_BASE = "http://localhost:8000/api/v1"
-
-# Para pruebas en producción:
-# API_BASE = "https://taller1-g43w.onrender.com/api/v1"
+# Detectar la URL base desde variables de entorno o usar localhost por defecto
+API_BASE_URL = os.environ.get('API_BASE_URL', 'http://localhost:8000')
+API_BASE = f"{API_BASE_URL}/api/v1"
 BASE_URL = f"{API_BASE}/users"
 AUTH_URL = f"{API_BASE}/auth"
 HEADERS = {"Content-Type": "application/json"}
+
+# Mostrar la configuración actual
+TEST_ENV = os.environ.get('TEST_ENVIRONMENT', 'LOCAL')
+print(f"🔧 Configuración de pruebas:")
+print(f"   Entorno: {TEST_ENV}")
+print(f"   URL Base: {API_BASE_URL}")
+print(f"   API Base: {API_BASE}")
+print()
 
 def print_request(method, url, payload=None):
     """Prints the outgoing request details."""
