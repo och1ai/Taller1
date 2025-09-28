@@ -1,0 +1,103 @@
+@startuml
+
+title User Service - Arquitectura del Sistema
+
+package "Client Layer" {
+  [Web Client] as client
+  [Test Client] as testclient
+}
+
+package "API Layer" {
+  [FastAPI Application] as fastapi
+  [Swagger/OpenAPI] as swagger
+  [JWT Authentication] as jwt
+}
+
+package "Business Logic Layer" {
+  package "Endpoints" {
+    [Users Controller] as users_endpoint
+    [Auth Controller] as auth_endpoint
+    [Audit Controller] as audit_endpoint
+  }
+  
+  package "Core Services" {
+    [Authentication Service] as auth_service
+    [Security Service] as security_service
+  }
+}
+
+package "Data Access Layer" {
+  package "CRUD Operations" {
+    [User CRUD] as user_crud
+    [Audit CRUD] as audit_crud
+    [Base CRUD] as base_crud
+  }
+  
+  package "Models" {
+    [User Model] as user_model
+    [Audit Model] as audit_model
+  }
+  
+  package "Schemas" {
+    [User Schemas] as user_schemas
+    [Auth Schemas] as auth_schemas
+    [Audit Schemas] as audit_schemas
+  }
+}
+
+package "Database Layer" {
+  database "PostgreSQL" as db {
+    [users table] as users_table
+    [audit_logs table] as audit_table
+  }
+}
+
+package "External Services" {
+  [Mock Main API] as mock_api
+}
+
+' Client connections
+client --> fastapi : HTTP/REST
+testclient --> fastapi : HTTP/REST
+client --> swagger : View Documentation
+
+' API Layer connections
+fastapi --> users_endpoint : Route /users
+fastapi --> auth_endpoint : Route /auth
+fastapi --> audit_endpoint : Route /audit-logs
+fastapi --> jwt : Token Validation
+
+' Business Logic connections
+users_endpoint --> user_crud : CRUD Operations
+users_endpoint --> audit_crud : Audit Logging
+auth_endpoint --> auth_service : Authentication
+auth_endpoint --> user_crud : User Lookup
+audit_endpoint --> audit_crud : Audit Retrieval
+
+auth_service --> security_service : Password Hashing
+auth_service --> jwt : Token Generation
+
+' Data Access connections
+user_crud --> base_crud : Inherit
+audit_crud --> base_crud : Inherit
+user_crud --> user_model : Database Operations
+audit_crud --> audit_model : Database Operations
+
+user_crud --> user_schemas : Data Validation
+audit_crud --> audit_schemas : Data Validation
+auth_endpoint --> auth_schemas : Request/Response
+
+' Database connections
+user_model --> users_table : SQLAlchemy ORM
+audit_model --> audit_table : SQLAlchemy ORM
+
+' External connections
+mock_api ..> fastapi : Future Integration
+
+note right of base_crud : Implements Repository Pattern\nwith Generic CRUD Operations
+
+note right of jwt : JWT tokens with\nHS256 algorithm
+
+note right of db : PostgreSQL with\nUUID primary keys\nand soft delete support
+
+@enduml

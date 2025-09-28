@@ -178,6 +178,68 @@ def test_auth():
 
     return admin_headers
 
+def test_audit_logs(admin_headers):
+    """Test the audit logs endpoint."""
+    print("\nTESTING AUDIT LOGS...")
+    print("="*80)
+    
+    # 1. Test accessing audit logs with admin token
+    print("Step 1: Testing audit logs access with admin token...")
+    print_request("GET", f"{API_BASE}/audit-logs/", None)
+    response = requests.get(f"{API_BASE}/audit-logs/", headers=admin_headers)
+    print_response(response)
+    assert response.status_code == 200, "Admin should be able to access audit logs"
+    logs = response.json()
+    assert isinstance(logs, list), "Response should be a list of audit logs"
+    if logs:
+        log = logs[0]
+        assert "id" in log, "Audit log should have an ID"
+        assert "action" in log, "Audit log should have an action"
+        assert "entity_type" in log, "Audit log should have an entity_type"
+        assert "entity_id" in log, "Audit log should have an entity_id"
+        assert "performed_by" in log, "Audit log should have a performed_by field"
+        assert "performed_at" in log, "Audit log should have a performed_at timestamp"
+    print("--- Admin audit logs access test passed ---\n")
+    
+    # 2. Test accessing audit logs with regular user token (should fail)
+    print("Step 2: Creating a regular user for unauthorized access test...")
+    regular_email = generate_unique_email()
+    regular_password = "Password123!"
+    user_payload = {
+        "full_name": "Regular Test User",
+        "email": regular_email,
+        "password": regular_password
+    }
+    print_request("POST", f"{API_BASE}/users/", user_payload)
+    response = requests.post(f"{API_BASE}/users/", headers={"Content-Type": "application/json"}, json=user_payload)
+    print_response(response)
+    assert response.status_code == 200, "Failed to create test user"
+    
+    # Login with the regular user
+    login_payload = {
+        "email": regular_email,
+        "password": regular_password
+    }
+    print_request("POST", f"{API_BASE}/auth/login", login_payload)
+    response = requests.post(f"{API_BASE}/auth/login", headers={"Content-Type": "application/json"}, json=login_payload)
+    print_response(response)
+    assert response.status_code == 200, "Login failed"
+    regular_token = response.json()["access_token"]
+    
+    # Try to access audit logs with regular user token
+    print("Step 3: Testing audit logs access with regular user token...")
+    user_headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {regular_token}"
+    }
+    print_request("GET", f"{API_BASE}/audit-logs/", None)
+    response = requests.get(f"{API_BASE}/audit-logs/", headers=user_headers)
+    print_response(response)
+    assert response.status_code == 403, "Regular user should not be able to access audit logs"
+    print("--- Unauthorized audit logs access test passed ---\n")
+    
+    print("✅ All audit logs tests passed successfully!\n")
+
 def test_api():
     """Runs a sequence of API tests."""
     global HEADERS  # Para poder modificar los headers globales
@@ -309,7 +371,11 @@ def test_api():
         print_response(response)
         assert response.status_code == 404, f"Expected status code 404, but got {response.status_code}"
         print("--- Verified user is not found (soft delete successful) ---\n")
-
+        
+        # Finally, test the audit logs endpoint
+        admin_headers = {"Content-Type": "application/json", "Authorization": "Bearer " + admin_token}
+        test_audit_logs(admin_headers)
+        
         print("✅ All tests passed successfully!")
 
     except AssertionError as e:

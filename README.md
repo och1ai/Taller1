@@ -1,175 +1,688 @@
-# User Service API - Perla Metro
+# 🚀 User Service API
 
-Este servicio gestiona la información de los usuarios del sistema de Perla Metro, proporcionando una API RESTful para la gestión segura de usuarios.
+<div align="center">
 
-## Arquitectura
+![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-20.10+-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-Authentication-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 
-El proyecto sigue una arquitectura en capas con un diseño modular, implementando los siguientes patrones de diseño:
+**Servicio de gestión de usuarios empresarial con autenticación JWT y auditoría completa**
 
-### Patrones de Diseño
+[📖 Documentación](#-documentación) •
+[🏗️ Arquitectura](#️-arquitectura) •
+[🚀 Instalación](#-instalación-y-configuración) •
+[🧪 Pruebas](#-pruebas) •
+[📊 API](#-documentación-de-la-api)
 
-1. **Repository Pattern**
-   - Implementado en la capa CRUD para abstraer las operaciones de la base de datos
-   - Permite cambiar fácilmente la implementación del almacenamiento sin afectar la lógica de negocio
+</div>
 
-2. **Dependency Injection**
-   - Utilizado para la inyección de dependencias en los endpoints
-   - Facilita el testing y mantiene el código desacoplado
+---
 
-3. **Factory Pattern**
-   - Implementado en la creación de la base de datos y sesiones
-   - Centraliza la creación de objetos complejos
+## 📋 Tabla de Contenidos
 
-### Capas de la Aplicación
+- [🎯 Descripción del Proyecto](#-descripción-del-proyecto)
+- [🏗️ Arquitectura](#️-arquitectura)
+- [🎨 Patrones de Diseño](#-patrones-de-diseño)
+- [🚀 Instalación y Configuración](#-instalación-y-configuración)
+- [🐳 Docker](#-docker)
+- [🧪 Pruebas](#-pruebas)
+- [📊 Documentación de la API](#-documentación-de-la-api)
+- [🔒 Seguridad](#-seguridad)
+- [📈 Auditoría](#-auditoría)
+- [🌐 Despliegue en la Nube](#-despliegue-en-la-nube)
 
-1. **API Layer (`app/api/`)**
-   - Maneja las rutas y endpoints
-   - Implementa la validación de datos de entrada
-   - Gestiona las respuestas HTTP
+---
 
-2. **Service Layer (`app/crud/`)**
-   - Implementa la lógica de negocio
-   - Gestiona las operaciones CRUD
-   - Maneja las reglas de negocio específicas
+## 🎯 Descripción del Proyecto
 
-3. **Model Layer (`app/models/`)**
-   - Define los modelos de la base de datos
-   - Implementa las relaciones y constraints
+User Service es una API RESTful desarrollada con **FastAPI** que proporciona un sistema completo de gestión de usuarios empresariales. El servicio incluye autenticación JWT, autorización por roles, auditoría de acciones administrativas y validaciones de seguridad robustas.
 
-4. **Schema Layer (`app/schemas/`)**
-   - Define los modelos de datos para la API
-   - Implementa la validación de datos
-   - Maneja la serialización/deserialización
+### ✨ Características Principales
 
-## Consultas Disponibles
+- 🔐 **Autenticación JWT** con tokens seguros
+- 👥 **Gestión de usuarios** con roles (admin/usuario regular)
+- 🛡️ **Autorización granular** basada en permisos
+- 📝 **Auditoría completa** de acciones administrativas
+- 🔒 **Validaciones de seguridad** (emails institucionales, contraseñas fuertes)
+- 🗑️ **Soft delete** para integridad de datos
+- 📊 **Documentación automática** con Swagger/OpenAPI
+- 🐳 **Containerización** con Docker
+- 🧪 **Suite de pruebas** automatizadas
 
-### Usuarios (`/api/v1/users/`)
+---
 
-1. **Crear Usuario (POST `/`)**
-   ```json
-   {
-     "full_name": "string",
-     "email": "user@perlametro.cl",
-     "password": "string"
-   }
-   ```
-   - Valida correo institucional (@perlametro.cl)
-   - Valida contraseña segura (8+ caracteres, mayúsculas, minúsculas, números y caracteres especiales)
+## 🏗️ Arquitectura
 
-2. **Listar Usuarios (GET `/`)**
-   - Parámetros opcionales:
-     - `skip`: número de registros a saltar
-     - `limit`: límite de registros
-     - `full_name`: filtrar por nombre
-     - `email`: filtrar por correo
-     - `is_active`: filtrar por estado
+El proyecto sigue una **arquitectura de capas** bien definida que separa responsabilidades y facilita el mantenimiento:
 
-3. **Obtener Usuario (GET `/{user_id}`)**
-   - Retorna los datos del usuario por ID
-   - Excluye información sensible
+### Diagrama de Arquitectura
 
-4. **Actualizar Usuario (PUT `/{user_id}`)**
-   ```json
-   {
-     "full_name": "string",
-     "email": "user@perlametro.cl",
-     "password": "string"
-   }
-   ```
-   - Todos los campos son opcionales
-   - Mantiene las mismas validaciones que la creación
+![Arquitectura del Sistema](docs/architecture.png)
 
-5. **Eliminar Usuario (DELETE `/{user_id}`)**
-   - Implementa soft delete
-   - Mantiene el registro en la base de datos pero lo marca como eliminado
+### Capas del Sistema
 
-## Ejecución del Proyecto
+1. **Client Layer**: Interfaz de usuario y clientes de testing
+2. **API Layer**: FastAPI, autenticación JWT, documentación OpenAPI
+3. **Business Logic Layer**: Controladores de endpoints y servicios de negocio
+4. **Data Access Layer**: Operaciones CRUD, modelos y esquemas
+5. **Database Layer**: PostgreSQL con tablas usuarios y auditoría
+
+### Modelo de Datos
+
+![Modelo de Datos](docs/database.png)
+
+---
+
+## 🎨 Patrones de Diseño
+
+El proyecto implementa varios patrones de diseño para garantizar código mantenible y escalable:
+
+### 1. **Repository Pattern** 🗄️
+
+Centraliza la lógica de acceso a datos y proporciona una interfaz uniforme para las operaciones CRUD.
+
+```python
+# user_service/app/crud/base.py
+class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
+    """
+    Clase base para operaciones CRUD (Create, Read, Update, Delete).
+    Implementa el patrón Repository con métodos genéricos.
+    """
+    
+    def __init__(self, model: Type[ModelType]):
+        self.model = model
+
+    def get(self, db: Session, id: Any) -> Optional[ModelType]:
+        return db.query(self.model).filter(
+            self.model.id == id,
+            self.model.deleted_at.is_(None)
+        ).first()
+
+    def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
+        obj_in_data = jsonable_encoder(obj_in)
+        db_obj = self.model(**obj_in_data)
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+```
+
+### 2. **Dependency Injection** 💉
+
+Utiliza el sistema de dependencias de FastAPI para inyectar servicios y conexiones de base de datos.
+
+```python
+# user_service/app/api/deps.py
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Uso en endpoints
+@router.post("/", response_model=User)
+def create_user(
+    *,
+    db: Session = Depends(deps.get_db),  # ← Dependency Injection
+    user_in: UserCreate,
+):
+    return crud_user.create(db, obj_in=user_in)
+```
+
+### 3. **Strategy Pattern** 🎯
+
+Implementa diferentes estrategias de validación y procesamiento según el contexto.
+
+```python
+# user_service/app/schemas/user.py
+class UserCreate(UserBase):
+    @validator('email')
+    def validate_institutional_email(cls, v):
+        if not v.endswith('@perlametro.cl'):
+            raise ValueError('El correo debe ser institucional (@perlametro.cl)')
+        return v
+    
+    @validator('password')
+    def validate_password(cls, v):
+        # Estrategia de validación de contraseña fuerte
+        if len(v) < 8:
+            raise ValueError('Contraseña debe tener al menos 8 caracteres')
+        # ... más validaciones
+        return v
+```
+
+### 4. **Factory Pattern** 🏭
+
+Crea instancias de objetos específicos basados en parámetros.
+
+```python
+# user_service/app/core/auth.py
+def create_access_token(
+    subject: Union[str, Any],
+    is_admin: bool,
+    expires_delta: Optional[timedelta] = None
+) -> str:
+    """Factory method para crear tokens JWT con diferentes configuraciones"""
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    to_encode = {
+        "sub": str(subject),
+        "exp": expire,
+        "is_admin": is_admin
+    }
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+```
+
+### 5. **Template Method Pattern** 📋
+
+Define la estructura de algoritmos en la clase base y permite que las subclases sobrescriban pasos específicos.
+
+```python
+# user_service/app/crud/user.py
+class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
+    def create(self, db: Session, *, obj_in: UserCreate, is_admin: bool = False) -> User:
+        """Sobrescribe el método create para agregar lógica específica de usuario"""
+        db_obj = User(
+            email=obj_in.email,
+            hashed_password=get_password_hash(obj_in.password),  # ← Paso específico
+            full_name=obj_in.full_name,
+            is_admin=is_admin
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
+    def remove(self, db: Session, *, id: uuid.UUID) -> User:
+        """Implementa soft delete específico para usuarios"""
+        obj = db.query(self.model).get(id)
+        obj.deleted_at = func.now()  # ← Soft delete en lugar de eliminación física
+        db.add(obj)
+        db.commit()
+        return obj
+```
+
+### 6. **Singleton Pattern** 🎱
+
+Garantiza una única instancia de configuraciones globales.
+
+```python
+# user_service/app/core/config.py
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "User Service"
+    API_V1_STR: str = "/api/v1"
+    DATABASE_URL: str
+    SECRET_KEY: str
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()  # ← Instancia única global
+```
+
+### 7. **Observer Pattern** 👁️
+
+Implementa un sistema de auditoría que "observa" acciones administrativas.
+
+```python
+# user_service/app/api/v1/endpoints/users.py
+@router.delete("/{user_id}", response_model=User)
+async def delete_user(*, db: Session = Depends(deps.get_db), user_id: uuid.UUID, ...):
+    user = crud_user.remove(db, id=user_id)
+    
+    # Observer: Registra la acción en auditoría
+    crud_audit.create_log(
+        db,
+        action="delete_user",
+        entity_type="user",
+        entity_id=user_id,
+        performed_by=token_data.sub,
+        details={
+            "deleted_user_email": user.email,
+            "soft_delete": True
+        }
+    )
+    return user
+```
+
+---
+
+## 🚀 Instalación y Configuración
 
 ### Prerrequisitos
 
-- Docker
-- Docker Compose
-- Git
+- **Python 3.9+**
+- **Docker & Docker Compose** (para ejecución con contenedores)
+- **PostgreSQL** (para ejecución local sin Docker)
+- **Git**
 
-### Pasos de Instalación
+### Enlaces de Descarga
 
-1. **Clonar el Repositorio**
-   ```bash
-   git clone <repository-url>
-   cd Taller1
-   ```
+- [🐳 Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [🐳 Docker Compose](https://docs.docker.com/compose/install/)
+- [🐍 Python](https://www.python.org/downloads/)
+- [🐘 PostgreSQL](https://www.postgresql.org/download/)
 
-2. **Configurar Variables de Entorno**
-   ```bash
-   # En user_service/.env
-   DATABASE_URL=postgresql://user:password@db:5432/user_db
-   SECRET_KEY=a_very_secret_key
-   ```
+### 🐳 Opción 1: Con Docker Compose (Recomendado)
 
-3. **Iniciar los Servicios**
-   ```bash
-   ./start-local.sh
-   ```
-   Este script:
-   - Construye las imágenes Docker
-   - Inicia los contenedores
-   - Ejecuta las migraciones
-   - Carga los datos iniciales
+Esta es la forma más fácil de ejecutar el proyecto completo:
 
-4. **Verificar la Instalación**
-   ```bash
-   python3 test_api.py
-   ```
-   Ejecuta las pruebas funcionales para verificar que todo funciona correctamente
-
-### Estructura del Proyecto
-
-```
-user_service/
-├── app/
-│   ├── api/                 # Endpoints y rutas
-│   │   ├── v1/
-│   │   └── deps.py         # Dependencias (DB, etc.)
-│   ├── core/               # Configuración central
-│   │   ├── config.py       # Variables de configuración
-│   │   ├── database.py     # Configuración de DB
-│   │   └── security.py     # Funciones de seguridad
-│   ├── crud/               # Operaciones de base de datos
-│   │   ├── base.py         # CRUD base genérico
-│   │   └── user.py         # CRUD específico de usuarios
-│   ├── models/             # Modelos SQLAlchemy
-│   │   └── user.py         # Modelo de Usuario
-│   ├── schemas/            # Schemas Pydantic
-│   │   └── user.py         # Schemas de Usuario
-│   └── main.py            # Punto de entrada de la aplicación
-├── migrations/            # Migraciones de SQL
-├── Dockerfile            # Configuración de Docker
-└── requirements.txt      # Dependencias Python
-```
-
-## Testing
-
-### Tests Unitarios
+#### Linux/MacOS
 ```bash
-# En desarrollo
+# Clonar el repositorio
+git clone <repository-url>
+cd user-service
+
+# Ejecutar con Docker Compose
+./start-local.sh
 ```
 
-### Tests Funcionales
+#### Windows
+```batch
+# Clonar el repositorio
+git clone <repository-url>
+cd user-service
+
+# Ejecutar con Docker Compose
+start-local.bat
+```
+
+Los servicios estarán disponibles en:
+- **User Service**: http://localhost:8000
+- **Mock Main API**: http://localhost:8001
+- **Base de datos**: localhost:5432
+
+### 🐋 Opción 2: Solo Docker
+
+Si prefieres mayor control sobre los contenedores:
+
 ```bash
-python3 test_api.py
+# Construir las imágenes
+docker-compose build
+
+# Iniciar servicios en segundo plano
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f user_service
+
+# Detener servicios
+docker-compose down
 ```
 
-Este script prueba:
-- Validaciones de entrada (correo y contraseña)
-- Operaciones CRUD completas
-- Soft delete
-- Restricciones de unicidad
+### 💻 Opción 3: Ejecución Local (sin Docker)
 
-## Contribución
+Para desarrollo local sin contenedores:
 
-1. Fork el repositorio
-2. Cree una rama para su característica (`git checkout -b feature/AmazingFeature`)
-3. Commit sus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abra un Pull Request
-# Taller1
+#### 1. Configurar Base de Datos
+
+```bash
+# Instalar y configurar PostgreSQL
+sudo apt update
+sudo apt install postgresql postgresql-contrib  # Ubuntu/Debian
+# o
+brew install postgresql  # macOS
+
+# Crear base de datos
+sudo -u postgres psql
+CREATE DATABASE user_service_db;
+CREATE USER user_service WITH PASSWORD 'password123';
+GRANT ALL PRIVILEGES ON DATABASE user_service_db TO user_service;
+\q
+```
+
+#### 2. Configurar el Proyecto
+
+```bash
+# Crear entorno virtual
+python -m venv venv
+
+# Activar entorno virtual
+# Linux/macOS:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r user_service/requirements.txt
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus configuraciones
+```
+
+#### 3. Ejecutar Aplicación
+
+```bash
+# Aplicar migraciones
+cd user_service
+python -c "from app.core.database import engine, Base; Base.metadata.create_all(bind=engine)"
+
+# Ejecutar seeders
+python -m app.seeders.seed
+
+# Iniciar servidor
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### ⚙️ Variables de Entorno
+
+Crear archivo `.env` en la raíz del proyecto:
+
+```env
+# Base de datos
+DATABASE_URL=postgresql://user_service:password123@localhost:5432/user_service_db
+
+# Seguridad
+SECRET_KEY=your-super-secret-jwt-key-change-this-in-production
+
+# Configuración de la aplicación
+PROJECT_NAME=User Service
+API_V1_STR=/api/v1
+```
+
+---
+
+## 🧪 Pruebas
+
+El proyecto incluye una suite completa de pruebas que valida todos los endpoints y funcionalidades.
+
+### Ejecución de Pruebas
+
+#### Con Docker Compose (Servicios en ejecución)
+
+```bash
+# Linux/macOS
+./test.sh
+
+# Windows
+test.bat
+```
+
+#### Con Python Virtual Environment
+
+```bash
+# Crear y activar entorno virtual
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# o
+venv\Scripts\activate  # Windows
+
+# Instalar dependencias de testing
+pip install -r requirements-test.txt
+
+# Ejecutar pruebas
+python test_api.py
+```
+
+#### Para Servicios en la Nube
+
+Para probar servicios desplegados en la nube, modifica la URL base en `test_api.py`:
+
+```python
+# Cambiar la URL base por la de tu servicio desplegado
+BASE_URL = "https://your-service.cloud-provider.com"  # Ejemplo
+# BASE_URL = "http://localhost:8000"  # Local
+```
+
+### 📊 Cobertura de Pruebas
+
+Las pruebas cubren:
+
+- ✅ **Validaciones de entrada** (email institucional, contraseñas fuertes)
+- ✅ **Autenticación JWT** (login, validación de tokens)
+- ✅ **Autorización** (permisos por rol)
+- ✅ **CRUD de usuarios** (crear, leer, actualizar, eliminar)
+- ✅ **Auditoría** (registro y consulta de logs)
+- ✅ **Soft delete** (eliminación suave)
+- ✅ **Casos de error** (401, 403, 404, 422)
+
+### Flujo de Autenticación
+
+![Flujo de Autenticación](docs/auth_flow.png)
+
+---
+
+## 📊 Documentación de la API
+
+### 🔗 Acceso a la Documentación
+
+Una vez que el servicio esté ejecutándose, la documentación interactiva estará disponible en:
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI JSON**: http://localhost:8000/api/v1/openapi.json
+
+### 🛠️ Endpoints Principales
+
+#### Autenticación
+
+| Método | Endpoint | Descripción | Auth Required |
+|--------|----------|-------------|---------------|
+| `POST` | `/api/v1/auth/login` | Iniciar sesión | ❌ |
+| `GET` | `/api/v1/auth/session` | Info de sesión | ✅ |
+
+#### Gestión de Usuarios
+
+| Método | Endpoint | Descripción | Auth Required | Admin Required |
+|--------|----------|-------------|---------------|----------------|
+| `POST` | `/api/v1/users/` | Crear usuario | ❌ | ❌ |
+| `GET` | `/api/v1/users/` | Listar usuarios | ✅ | ❌ |
+| `GET` | `/api/v1/users/{user_id}` | Obtener usuario | ✅ | ❌ |
+| `PUT` | `/api/v1/users/{user_id}` | Actualizar usuario | ✅ | ❌* |
+| `DELETE` | `/api/v1/users/{user_id}` | Eliminar usuario | ✅ | ✅ |
+
+*_Los usuarios pueden actualizar su propio perfil_
+
+#### Auditoría
+
+| Método | Endpoint | Descripción | Auth Required | Admin Required |
+|--------|----------|-------------|---------------|----------------|
+| `GET` | `/api/v1/audit-logs/` | Ver logs de auditoría | ✅ | ✅ |
+
+### 📝 Ejemplos de Uso
+
+#### Crear Usuario
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/users/" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "full_name": "Juan Pérez",
+       "email": "juan.perez@perlametro.cl",
+       "password": "MiPassword123!"
+     }'
+```
+
+#### Iniciar Sesión
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "juan.perez@perlametro.cl",
+       "password": "MiPassword123!"
+     }'
+```
+
+#### Listar Usuarios (con token)
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/users/" \
+     -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+---
+
+## 🔒 Seguridad
+
+El servicio implementa múltiples capas de seguridad:
+
+### 🛡️ Medidas de Seguridad Implementadas
+
+1. **Autenticación JWT**
+   - Tokens firmados con HMAC SHA256
+   - Expiración automática (30 minutos por defecto)
+   - Validación de integridad en cada request
+
+2. **Contraseñas Seguras**
+   - Hash bcrypt con salt automático
+   - Validación de complejidad (8+ caracteres, mayús/minus, números, especiales)
+   - Nunca se almacenan en texto plano
+
+3. **Validación de Datos**
+   - Emails institucionales únicamente (`@perlametro.cl`)
+   - Schemas Pydantic para validación automática
+   - Sanitización de inputs
+
+4. **Autorización Granular**
+   - Roles de usuario (admin/regular)
+   - Permisos específicos por endpoint
+   - Validación de pertenencia de recursos
+
+5. **Protección de Datos**
+   - Soft delete para preservar integridad
+   - UUIDs como identificadores (no incrementales)
+   - Logs de auditoría para trazabilidad
+
+### 🚫 Políticas de Seguridad
+
+- **Principio de menor privilegio**: Los usuarios solo acceden a lo necesario
+- **Fail-safe defaults**: Por defecto, se deniega el acceso
+- **Defense in depth**: Múltiples capas de validación
+- **Audit trail**: Todas las acciones administrativas se registran
+
+---
+
+## 📈 Auditoría
+
+### 📋 Sistema de Logs
+
+El servicio mantiene un registro completo de todas las acciones administrativas:
+
+#### Eventos Registrados
+
+- 🗑️ **Eliminación de usuarios** (con detalles del usuario eliminado)
+- 👤 **Modificaciones de perfil** (por administradores)
+- 🔐 **Acciones sensibles** de administración
+
+#### Estructura de Logs
+
+```json
+{
+  "id": "uuid-v4",
+  "action": "delete_user",
+  "entity_type": "user",
+  "entity_id": "user-uuid",
+  "performed_by": "admin-uuid",
+  "performed_at": "2024-01-15T10:30:00Z",
+  "details": {
+    "deleted_user_email": "usuario@perlametro.cl",
+    "soft_delete": true
+  }
+}
+```
+
+#### Consulta de Logs
+
+```bash
+# Ver todos los logs (requiere permisos de admin)
+curl -X GET "http://localhost:8000/api/v1/audit-logs/" \
+     -H "Authorization: Bearer ADMIN_TOKEN"
+```
+
+---
+
+## 🌐 Despliegue en la Nube
+
+### 🚀 URL del Servicio
+
+Una vez desplegado, el servicio estará disponible en:
+
+```
+https://user-service.your-cloud-provider.com:8443
+```
+
+### 📊 Documentación en la Nube
+
+- **Swagger UI**: https://user-service.your-cloud-provider.com:8443/docs
+- **ReDoc**: https://user-service.your-cloud-provider.com:8443/redoc
+
+### 🧪 Pruebas contra Servicio Desplegado
+
+Para ejecutar las pruebas contra el servicio en la nube:
+
+1. **Modificar la URL base** en `test_api.py`:
+   ```python
+   BASE_URL = "https://user-service.your-cloud-provider.com:8443"
+   ```
+
+2. **Ejecutar pruebas**:
+   ```bash
+   # Linux/macOS
+   ./test.sh
+   
+   # Windows  
+   test.bat
+   ```
+
+### ⚙️ Variables de Entorno en Producción
+
+```env
+DATABASE_URL=postgresql://user:pass@prod-db-host:5432/user_service_db
+SECRET_KEY=super-secure-production-key-256-bits
+PROJECT_NAME=User Service Production
+API_V1_STR=/api/v1
+ENVIRONMENT=production
+```
+
+---
+
+## 🤝 Contribución
+
+### 📋 Cómo Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -m 'Agrega nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
+
+### 🧪 Antes de Enviar PR
+
+- ✅ Ejecuta todas las pruebas (`./test.sh`)
+- ✅ Verifica que el código sigue las convenciones
+- ✅ Agrega pruebas para nueva funcionalidad
+- ✅ Actualiza la documentación si es necesario
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+---
+
+## 👥 Equipo
+
+Desarrollado con ❤️ por el equipo de desarrollo de Perlametro.
+
+---
+
+<div align="center">
+
+**¿Tienes preguntas?** 
+
+[📧 Contacto](mailto:dev@perlametro.cl) • [📖 Wiki](./docs/) • [🐛 Reportar Bug](./issues)
+
+---
+
+⭐ **¡No olvides darle una estrella al proyecto si te fue útil!** ⭐
+
+</div>

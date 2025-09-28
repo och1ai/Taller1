@@ -1,0 +1,45 @@
+@startuml
+
+title User Service - Modelo de Datos
+
+entity "users" {
+  * **id** : UUID [PK]
+  --
+  * full_name : VARCHAR
+  * email : VARCHAR [UK]
+  * hashed_password : VARCHAR
+  * is_active : BOOLEAN
+  * is_admin : BOOLEAN
+  * created_at : TIMESTAMP
+  * deleted_at : TIMESTAMP [NULL]
+}
+
+entity "audit_logs" {
+  * **id** : UUID [PK]
+  --
+  * action : VARCHAR
+  * entity_type : VARCHAR
+  * entity_id : UUID
+  * performed_by : UUID [FK]
+  * details : JSONB
+  * performed_at : TIMESTAMP
+}
+
+users ||--o{ audit_logs : "performed_by"
+
+note right of users
+  • UUID v4 como PK para seguridad
+  • Email único con validación institucional
+  • Soft delete con deleted_at
+  • Contraseñas hasheadas con bcrypt
+  • is_admin para control de acceso
+end note
+
+note right of audit_logs
+  • Registra todas las acciones administrativas
+  • entity_id referencia genérica
+  • details almacena información adicional
+  • performed_by referencia al usuario admin
+end note
+
+@enduml

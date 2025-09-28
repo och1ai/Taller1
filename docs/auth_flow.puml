@@ -1,0 +1,55 @@
+@startuml auth_flow
+
+title User Service - Flujo de Autenticación
+
+actor "Cliente" as client
+participant "API Gateway" as api
+participant "Auth Controller" as auth
+participant "User CRUD" as crud
+participant "Security Service" as security
+participant "JWT Service" as jwt
+database "PostgreSQL" as db
+
+== Proceso de Login ==
+
+client -> api: POST /auth/login\n{email, password}
+api -> auth: validate credentials
+auth -> crud: get_user_by_email()
+crud -> db: SELECT * FROM users\nWHERE email = ? AND deleted_at IS NULL
+db -> crud: user data
+crud -> auth: User object
+
+alt Usuario encontrado
+    auth -> security: verify_password(plain, hashed)
+    security -> auth: password valid
+    
+    alt Contraseña válida
+        auth -> jwt: create_access_token(user_id, is_admin)
+        jwt -> auth: JWT token
+        auth -> api: LoginResponse{token, user_info}
+        api -> client: 200 OK + JWT Token
+    else Contraseña inválida
+        auth -> api: HTTPException(401)
+        api -> client: 401 Unauthorized
+    end
+else Usuario no encontrado
+    auth -> api: HTTPException(401)
+    api -> client: 401 Unauthorized
+end
+
+== Proceso de Validación de Token ==
+
+client -> api: GET /users/\nAuthorization: Bearer <token>
+api -> auth: verify_token()
+auth -> jwt: decode_token()
+
+alt Token válido y no expirado
+    jwt -> auth: TokenPayload{user_id, is_admin}
+    auth -> api: user info
+    api -> client: 200 OK + data
+else Token inválido/expirado
+    auth -> api: HTTPException(401)
+    api -> client: 401 Unauthorized
+end
+
+@enduml

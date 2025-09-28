@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from app.api import deps
-from app.crud import crud_user
+from app.crud import crud_user, crud_audit
 from app.schemas import UserCreate, UserUpdate, User
 from app.core.security import validate_password
 from app.core.auth import get_current_user
@@ -170,4 +170,18 @@ async def delete_user(
             )
     
     user = crud_user.remove(db, id=user_id)
+    
+    # Log the user deletion in audit logs
+    crud_audit.create_log(
+        db,
+        action="delete_user",
+        entity_type="user",
+        entity_id=user_id,
+        performed_by=token_data.sub,
+        details={
+            "deleted_user_email": user.email,
+            "soft_delete": True
+        }
+    )
+    
     return user
