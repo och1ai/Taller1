@@ -19,9 +19,6 @@ else
     DB_HOST="db"
     DB_PORT=5432
 fi
-    DB_HOST="db"
-    DB_PORT=5432
-fi
 
 # Wait for the database to be ready
 echo "Waiting for postgres at $DB_HOST:$DB_PORT..."
