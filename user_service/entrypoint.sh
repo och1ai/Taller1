@@ -2,16 +2,23 @@
 
 # Extract database host from DATABASE_URL
 if [ -n "$DATABASE_URL" ]; then
-    # Extract host from postgresql://user:pass@host:port/db format
-    DB_HOST=$(echo $DATABASE_URL | sed -e 's|postgresql://[^@]*@\([^:/]*\).*|\1|')
-    DB_PORT=$(echo $DATABASE_URL | sed -e 's|.*:\([0-9]*\)/.*|\1|')
+    # Extract host from postgresql://user:pass@host[:port]/db format
+    # First try to extract host:port, then fall back to just host
+    DB_HOST=$(echo $DATABASE_URL | sed 's|.*@\([^/]*\)/.*|\1|' | sed 's|:\([0-9]*\)$||')
+    DB_PORT=$(echo $DATABASE_URL | sed -n 's|.*@[^:]*:\([0-9]\+\)/.*|\1|p')
     
-    # If port extraction failed, default to 5432
-    if [ "$DB_PORT" = "$DATABASE_URL" ]; then
+    # If no port was found, default to 5432
+    if [ -z "$DB_PORT" ]; then
         DB_PORT=5432
     fi
+    
+    echo "Parsed DB_HOST: $DB_HOST"
+    echo "Parsed DB_PORT: $DB_PORT"
 else
     # Fallback for local development
+    DB_HOST="db"
+    DB_PORT=5432
+fi
     DB_HOST="db"
     DB_PORT=5432
 fi
