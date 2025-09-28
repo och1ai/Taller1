@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+docs/
+
+# Testing
+test_api.py
+test.sh
+test.bat
+*test*.py
+venv/
+.venv*/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Development
+.env.example
+start-local.sh
+start-local.bat
+
+# Mock API (not needed for user service)
+mock_main_api/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
